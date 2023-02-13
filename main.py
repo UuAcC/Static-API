@@ -16,31 +16,28 @@ class MainWindow(QMainWindow):
         uic.loadUi('interface.ui', self)
 
         API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
-        self.coords = '134.854,-25.828'
-        self.map_find(self.coords)
-        self.show_image()
-
-        self.sizeSlider.valueChanged[int].connect(self.changeSize)
-        
-    def map_find(self, coords, size='5,5'):
+        coords = '134.854,-25.828'
         toponym = geocode(coords)
         toponym_coodrinates = toponym["Point"]["pos"]
         toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
+        self.prev = 125
         self.map_params = {
             "ll": ",".join([toponym_longitude, toponym_lattitude]),
-            "spn": size,
+            "spn": '6.25,6.25',
             "l": "map",
             'pt': ",".join([toponym_longitude, toponym_lattitude])
         }
         self.image(self.map_params)
+        self.sizeSlider.valueChanged[int].connect(self.changeSize)
 
     def changeSize(self, value):
-        frame = [float(x) for x in self.map_params.get('spn').split(',')]
-        for i in frame:
-            i -= float(value) * 10
-        self.map_params['spn'] = ','.join([str(x) for x in frame])
-        self.map_find(self.coords, self.map_params['spn'])
-        self.show_image()
+        a, b = [float(x) for x in self.map_params.get('spn').split(',')]
+        if 0.05 <= a <= 20 and 0.05 <= b <= 20:
+            a = value * 0.05
+            b = value * 0.05
+        self.prev = value
+        self.map_params['spn'] = ','.join([str(x) for x in [a, b]])
+        self.image(self.map_params)
 
     def image(self, map_params):
         map_api_server = "http://static-maps.yandex.ru/1.x/"
@@ -52,6 +49,7 @@ class MainWindow(QMainWindow):
         self.map_file = "map.png"
         with open(self.map_file, "wb") as file:
             file.write(response.content)
+        self.show_image()
 
     def show_image(self):
         self.pixmap = QPixmap(self.map_file)
