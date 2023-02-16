@@ -1,7 +1,6 @@
 import os
 import sys
-from io import BytesIO
-
+from PyQt5.QtCore import Qt
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
@@ -54,6 +53,14 @@ class MainWindow(QMainWindow):
     def show_image(self):
         self.pixmap = QPixmap(self.map_file)
         self.mapField.setPixmap(self.pixmap)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_PageDown:
+            self.changeSize(self.prev - 1)
+        elif event.key() == Qt.Key_PageUp:
+            self.changeSize(self.prev + 1)
+
+    # code
 
     def closeEvent(self, event):
         os.remove(self.map_file)
